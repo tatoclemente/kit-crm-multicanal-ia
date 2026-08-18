@@ -1,0 +1,24 @@
+{
+  "_nota": "Datos totalmente ficticios. Ninguna persona, teléfono, pedido ni equipo de este archivo existe. Sirve para probar el kit sin credenciales de nadie.",
+  "clientes": [
+    { "id": "CLI-001", "nombre": "Marina Estrada", "telefono": "5491100000001", "email": "marina@ejemplo.test", "etiquetas": ["mayorista"] },
+    { "id": "CLI-002", "nombre": "Bruno Talamonti", "telefono": "5491100000002", "email": "bruno@ejemplo.test", "etiquetas": [] },
+    { "id": "CLI-003", "nombre": "Sofía Renzi", "telefono": null, "email": "sofia@ejemplo.test", "etiquetas": [] }
+  ],
+  "pedidos": [
+    { "id": "PED-4471", "clienteId": "CLI-001", "estado": "en camino", "fecha": "2026-08-11", "total": "184500.00", "moneda": "ARS", "detalle": "2 × Termo Andes 1L, 1 × Mate Serrano", "seguimientoUrl": "https://seguimiento.ejemplo.test/PED-4471" },
+    { "id": "PED-4472", "clienteId": "CLI-002", "estado": "preparando", "fecha": "2026-08-14", "total": "62000.00", "moneda": "ARS", "detalle": "1 × Bolso Trekking 40L", "seguimientoUrl": null },
+    { "id": "PED-4390", "clienteId": "CLI-001", "estado": "entregado", "fecha": "2026-07-02", "total": "97000.00", "moneda": "ARS", "detalle": "1 × Camp Stove Mini", "seguimientoUrl": null }
+  ],
+  "reparaciones": [
+    { "id": "REP-2201", "clienteId": "CLI-002", "equipo": "Camp Stove Mini", "estado": "esperando repuesto", "ingresadoEl": "2026-08-05", "estimadoPara": "2026-08-22", "presupuesto": "38000.00", "observaciones": "Falta la válvula reguladora. El repuesto llega la semana que viene." },
+    { "id": "REP-2198", "clienteId": "CLI-001", "equipo": "Termo Andes 1L", "estado": "listo para retirar", "ingresadoEl": "2026-07-28", "estimadoPara": null, "presupuesto": "0.00", "observaciones": "Cambio por garantía. Sin cargo." },
+    { "id": "REP-2205", "clienteId": "CLI-003", "equipo": "Bolso Trekking 40L", "estado": "presupuesto pendiente de aprobación", "ingresadoEl": "2026-08-15", "estimadoPara": null, "presupuesto": null, "observaciones": "Cierre roto. Falta que el cliente apruebe el presupuesto." }
+  ],
+  "catalogo": [
+    { "id": "ART-01", "nombre": "Termo Andes 1L", "precio": "72000.00", "moneda": "ARS", "disponible": true, "url": "https://tienda.ejemplo.test/termo-andes" },
+    { "id": "ART-02", "nombre": "Mate Serrano", "precio": "40500.00", "moneda": "ARS", "disponible": true, "url": "https://tienda.ejemplo.test/mate-serrano" },
+    { "id": "ART-03", "nombre": "Bolso Trekking 40L", "precio": "62000.00", "moneda": "ARS", "disponible": false, "url": "https://tienda.ejemplo.test/bolso-trekking" },
+    { "id": "ART-04", "nombre": "Camp Stove Mini", "precio": "97000.00", "moneda": "ARS", "disponible": true, "url": "https://tienda.ejemplo.test/camp-stove" }
+  ]
+}
