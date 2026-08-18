@@ -7,3 +7,6 @@ node_modules/
 .DS_Store
 .vercel
 next-env.d.ts
+
+# Artefacto de compilación de TypeScript: se regenera solo.
+*.tsbuildinfo

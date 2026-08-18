@@ -22,8 +22,51 @@ export type ResultadoGuardrail =
 const FALLBACK_POR_DEFECTO =
   "Dejame confirmar ese dato con el equipo y te respondo en un rato.";
 
-/** Cifras con formato de dinero: 45000, 45.000, 45,000.50, $45.000, 1.200,50 */
-const REGEX_DINERO = /(?:\$|ars|usd|us\$)?\s?\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?/gi;
+/**
+ * Fechas que hay que sacar del texto ANTES de buscar cifras de dinero: DD/MM,
+ * DD/MM/AAAA y AAAA-MM-DD. Sin esto, "el 11/08/2026" deja el año "2026" suelto, con
+ * cuatro dígitos: pasa el filtro de longitud mínima y se lee como un precio.
+ */
+const REGEX_FECHA = /\b\d{1,2}\/\d{1,2}(?:\/\d{2,4})?\b|\b\d{4}-\d{2}-\d{2}\b/g;
+
+/** Cifra con formato de dinero completa: dígitos con separadores de miles o decimales. */
+const REGEX_CIFRA = /\d(?:[\d.,]*\d)?/g;
+
+/**
+ * Extrae cifras de dinero de un texto, evitando dos falsos positivos reales que
+ * aparecieron probando el kit contra la API real — los dos silenciosos, sin un solo
+ * error en ningún lado:
+ *
+ * 1. Números de pedido o de reparación ("PED-4471", "REP-2201"): la cifra queda
+ *    pegada a un prefijo con letras y guion. Una respuesta perfecta ("tu pedido
+ *    PED-4471 está en camino") se bloqueaba porque "447" parecía una cifra suelta.
+ * 2. Cantidades con unidad pegada ("40L", "1200ml"): sin espacio antes de la letra,
+ *    el número se lee igual que un precio.
+ *
+ * La exclusión se hace en dos pasos, no en una sola regex con lookaround: un
+ * lookahead al final de una regex con grupo opcional deja que el motor RETROCEDA a
+ * un match más corto para esquivar la condición (probado: "40L" con un lookahead
+ * `(?!\p{L})` al final igual dejaba pasar "4" solo, porque "0" —el siguiente
+ * carácter tras acortar el match— no es una letra). Achicar la cifra completa
+ * primero con `matchAll` y revisar el carácter de antes y de después en JS evita
+ * ese retroceso: siempre se juzga el número entero, nunca un fragmento.
+ */
+function extraerCifras(texto: string): string[] {
+  const sinFechas = texto.replace(REGEX_FECHA, " ");
+  const resultado: string[] = [];
+  for (const m of sinFechas.matchAll(REGEX_CIFRA)) {
+    const inicio = m.index;
+    const fin = inicio + m[0].length;
+    const antes = sinFechas[inicio - 1];
+    const despues = sinFechas[fin];
+    // Pegado a una letra, otro dígito, punto, coma o guion: es parte de un código.
+    if (antes && /[\p{L}\d.,-]/u.test(antes)) continue;
+    // Pegado a una letra sin espacio: es una cantidad con unidad, no un precio.
+    if (despues && /\p{L}/u.test(despues)) continue;
+    resultado.push(m[0]);
+  }
+  return resultado;
+}
 
 /** Entrada: lo que manda la persona. Corta el abuso antes de gastar tokens. */
 export function revisarEntrante(
@@ -49,7 +92,7 @@ export async function revisarSaliente(
   }
 
   // 2 · Precios inventados.
-  const cifras = texto.match(REGEX_DINERO) ?? [];
+  const cifras = extraerCifras(texto);
   const permitidas = new Set(config.preciosPermitidos.map(normalizarCifra));
   for (const cifra of cifras) {
     const limpia = normalizarCifra(cifra);

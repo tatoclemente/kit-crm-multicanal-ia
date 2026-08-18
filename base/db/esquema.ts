@@ -286,13 +286,32 @@ export const agentConfigs = pgTable(
     channel: text("channel").notNull(),
     enabled: boolean("enabled").notNull().default(false),
     systemPrompt: text("system_prompt"),
-    enabledTools: jsonb("enabled_tools").$type<string[]>().notNull().default([]),
+    /**
+     * `enabledTools`, `bufferSeconds`, `allowedPrices` y `allowedHosts` son NULLABLE
+     * A PROPÓSITO, sin default en la columna. Es la mitad de la cascada de
+     * `configDelCanal()` en `agente/ejecutar.ts`.
+     *
+     * Si esta columna tuviera `.notNull().default([])`, una fila de canal que no
+     * especifica el campo NO queda en `null`: queda en `[]`, un valor real. El `??`
+     * de la cascada solo salta al valor global cuando encuentra `null`/`undefined`,
+     * así que un array vacío por default GANA sobre el valor global y lo tapa sin un
+     * solo error. Así se perdió esta guerra la primera vez: la fila `whatsapp` tenía
+     * `enabled_tools: []` de fábrica, el agente se quedó sin herramientas, y los
+     * precios/dominios permitidos quedaron vacíos con la lista blanca efectivamente
+     * apagada, sin ningún mensaje que lo avisara.
+     *
+     * El default real vive en el código (`?? []`, `?? 8`), no acá. Una fila de canal
+     * que SÍ quiere apagar todas las herramientas o poner una lista vacía a propósito
+     * lo hace guardando `[]` explícitamente; dejar la columna sin tocar cascada al
+     * valor global.
+     */
+    enabledTools: jsonb("enabled_tools").$type<string[]>(),
     model: text("model"),
     /** Segundos que espera por si la persona sigue escribiendo, para responder a todo junto. */
-    bufferSeconds: integer("buffer_seconds").notNull().default(8),
+    bufferSeconds: integer("buffer_seconds"),
     /** Lista blanca de precios y de dominios enlazables. Ver guardrails. */
-    allowedPrices: jsonb("allowed_prices").$type<string[]>().notNull().default([]),
-    allowedHosts: jsonb("allowed_hosts").$type<string[]>().notNull().default([]),
+    allowedPrices: jsonb("allowed_prices").$type<string[]>(),
+    allowedHosts: jsonb("allowed_hosts").$type<string[]>(),
     fallbackMessage: text("fallback_message"),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
