@@ -14,13 +14,13 @@
     "lint": "next lint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "verificar:openapi": "tsx scripts/verificar-openapi.ts",
-    "verificar:proveedor": "tsx scripts/verificar-proveedor.ts",
-    "webhook:registrar": "tsx scripts/registrar-webhook.ts",
-    "webhook:simular": "tsx scripts/simular-webhook.ts",
-    "importar:historial": "tsx scripts/importar-historial.ts",
-    "mcp": "tsx mcp/servidor.ts",
-    "sembrar:ejemplo": "tsx scripts/sembrar-ejemplo.ts"
+    "verificar:openapi": "tsx --env-file-if-exists=.env.local scripts/verificar-openapi.ts",
+    "verificar:proveedor": "tsx --env-file-if-exists=.env.local scripts/verificar-proveedor.ts",
+    "webhook:registrar": "tsx --env-file-if-exists=.env.local scripts/registrar-webhook.ts",
+    "webhook:simular": "tsx --env-file-if-exists=.env.local scripts/simular-webhook.ts",
+    "importar:historial": "tsx --env-file-if-exists=.env.local scripts/importar-historial.ts",
+    "mcp": "tsx --env-file-if-exists=.env.local mcp/servidor.ts",
+    "sembrar:ejemplo": "tsx --env-file-if-exists=.env.local scripts/sembrar-ejemplo.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

@@ -29,8 +29,29 @@ const esquema = z.object({
   LOG_LEVEL: z.enum(["silent", "error", "warn", "info", "debug"]).default("info"),
 });
 
-export const entorno = esquema.parse(process.env);
+/**
+ * Falla al arrancar con un mensaje que se entiende, no con un volcado de zod.
+ * La diferencia importa: "falta ZERNIO_API_KEY" se arregla en diez segundos;
+ * un error de validación crudo parece que las credenciales estuvieran mal.
+ */
+function leerEntorno(): Entorno {
+  const resultado = esquema.safeParse(process.env);
+  if (resultado.success) return resultado.data;
+
+  const faltantes = Object.entries(resultado.error.flatten().fieldErrors)
+    .map(([variable, errores]) => `  - ${variable}: ${errores?.[0] ?? "inválida"}`)
+    .join("\n");
+
+  throw new Error(
+    `Faltan variables de entorno o son inválidas:\n${faltantes}\n\n` +
+      `Copiá base/.env.example a base/.env.local y completalas.\n` +
+      `Ese archivo está en .gitignore: no viaja al repositorio.\n` +
+      `En producción van en el panel de Vercel, no en un archivo.`,
+  );
+}
+
 export type Entorno = z.infer<typeof esquema>;
+export const entorno = leerEntorno();
 
 /** El host real, sacado del request. Nunca de una variable de entorno. */
 export function urlBase(req: Request): string {
