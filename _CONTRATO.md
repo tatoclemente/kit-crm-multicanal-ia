@@ -101,6 +101,9 @@ Un CRM entregado está terminado cuando, y solo cuando:
 | 18/08/2026 | `scripts/validar_kit.py` del creador | ✓ kit válido |
 | 18/08/2026 | `npm run verificar:openapi` contra el spec en vivo | ✓ 18/18 nombres siguen existiendo; spec sigue en 1.0.4 |
 | 18/08/2026 | `npm run db:generate` con base de prueba | ✓ 19 tablas; el índice parcial de idempotencia se emite correcto |
+| 18/08/2026 | Migración aplicada a Supabase real (Postgres 17, sa-east-1) | ✓ 19 tablas, 19 con RLS |
+| 18/08/2026 | Prueba de idempotencia en la base real | ✓ mismo `external_id` dos veces → 1 fila; dos salientes sin id → 2 filas |
+| 18/08/2026 | `get_advisors` de Supabase, seguridad | ✓ sin errores ni advertencias; 18 avisos informativos de RLS sin política, que es el diseño |
 | 18/08/2026 | `npm audit` | ⚠ `drizzle-orm` < 0.45.2 tenía inyección SQL (GHSA-gpj5-g38j-94v9) → **actualizado a 0.45.2** |
 
 ### Versiones resueltas y verificadas (18/08/2026)
@@ -129,3 +132,13 @@ que nada de eso llega al servidor desplegado. El aviso de esbuild afecta a su se
 desarrollo, que este kit no usa.
 
 Revisá el audit en cada instalación: la foto de hoy no vale dentro de seis meses.
+
+## Nota sobre la base de prueba
+
+El esquema se aplicó al proyecto de Supabase con el MCP, no con `npm run db:migrate`.
+Consecuencia concreta: drizzle **no sabe** que esa migración ya corrió, así que en esa
+base `db:migrate` va a fallar con "la tabla ya existe".
+
+Para una instalación nueva, el camino normal del kit sigue siendo `npm run db:migrate`
+sobre una base vacía. Sobre esta base de prueba, los cambios de esquema se aplican con
+`db:generate` y después el SQL a mano.
