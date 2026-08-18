@@ -27,8 +27,17 @@ En el panel del proveedor, creá una **clave restringida** (`zrk_`) con los grup
 publicar, a anuncios y a facturación: el CRM no necesita nada de eso, y si se filtra,
 el daño es de otro tamaño.
 
-La clave va a `.env.local`. No la pidas por chat, no la pegues en un mensaje y no la
-escribas en un archivo que vaya a un repositorio.
+La clave va a `base/.env.local`, que el usuario escribe **a mano**. No la pidas por
+chat, no la pegues en un mensaje y no la escribas en un archivo versionado.
+
+Tres cosas prácticas sobre ese archivo:
+
+- Los scripts la leen porque los `npm run` pasan `--env-file-if-exists=.env.local`.
+  `tsx` no lee ese archivo solo, y `next dev` sí: por eso el flag está solo donde hace
+  falta. Si agregás un script nuevo que use credenciales, agregale el flag.
+- **Una variable exportada en la terminal le gana al archivo**: Node no pisa lo que ya
+  está en el entorno. Cuando un valor "no toma", eso es lo primero a revisar.
+- En producción no hay `.env.local`: las variables van al panel de Vercel.
 
 ## La estructura del cliente
 
