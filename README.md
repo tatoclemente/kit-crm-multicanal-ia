@@ -71,7 +71,11 @@ Verificado el 17/08/2026:
   397 rutas. Los nombres de campo del cliente salen de ahí, no de una suposición.
 - `X-Zernio-Signature`, HMAC-SHA256, firma **opcional** del lado del proveedor: por eso
   el kit rechaza todo si no hay secreto configurado.
-- El núcleo (36 archivos) pasa `tsc --noEmit` en modo estricto, sin errores.
+- El núcleo (36 archivos) pasa `tsc --noEmit` en modo estricto, sin errores, y
+  `npm run build` de producción sale limpio.
+- La migración inicial se genera de verdad: 19 tablas, y el índice único **parcial** de
+  idempotencia sale con su `WHERE external_id is not null`, que es la línea que evita
+  contestar dos veces.
 
 Todavía **no** verificado contra la API en vivo, porque depende de las credenciales de
 cada instalación: el envío real de mensajes, la ventana de 24 horas por canal y el OAuth
