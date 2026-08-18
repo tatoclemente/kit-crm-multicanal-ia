@@ -187,7 +187,16 @@ export async function responderConversacion(opts: {
   return { respondio: true };
 }
 
-/** Cascada: config del canal → config global → default del código. */
+/**
+ * Cascada: config del canal → config global → default del código.
+ *
+ * El `??` solo funciona porque las columnas de `agentConfigs` que cascadean son
+ * NULLABLE sin default en el esquema (ver el comentario en `db/esquema.ts`). Si
+ * alguna volviera a tener `.notNull().default(...)`, una fila de canal sin ese campo
+ * dejaría de ser `null` y pasaría a ser el default de la columna: el `??` dejaría de
+ * caer al valor global, y las herramientas o la lista blanca de precios quedarían
+ * vacías sin ningún error que lo avise.
+ */
 async function configDelCanal(canal: string) {
   const filas = await db.query.agentConfigs.findMany();
   const delCanal = filas.find((f) => f.channel === canal);

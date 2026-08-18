@@ -84,7 +84,7 @@ Un CRM entregado está terminado cuando, y solo cuando:
 | 4 · Criterio de calidad | ✅ arriba |
 | 5 · Construir el kit universal | ✅ |
 | 6 · Ejemplo ficticio | ✅ 15 eventos, offline |
-| 7 · Ejecutar el kit | 🔄 typecheck y build verificados; el ejemplo necesita una base Postgres |
+| 7 · Ejecutar el kit | ✅ typecheck, build y los 15 eventos del ejemplo, de punta a punta, contra Supabase y OpenRouter reales |
 | 8 · Revisión | 🔄 `validar_kit.py` pasa |
 | 9 · Empaquetado | ⬜ pendiente de tu visto bueno |
 
@@ -105,6 +105,37 @@ Un CRM entregado está terminado cuando, y solo cuando:
 | 18/08/2026 | Prueba de idempotencia en la base real | ✓ mismo `external_id` dos veces → 1 fila; dos salientes sin id → 2 filas |
 | 18/08/2026 | `get_advisors` de Supabase, seguridad | ✓ sin errores ni advertencias; 18 avisos informativos de RLS sin política, que es el diseño |
 | 18/08/2026 | `npm audit` | ⚠ `drizzle-orm` < 0.45.2 tenía inyección SQL (GHSA-gpj5-g38j-94v9) → **actualizado a 0.45.2** |
+| 18/08/2026 | Los 15 eventos del ejemplo ficticio contra `next dev` + Supabase real + OpenRouter real | ⚠→✓ tres vueltas: ver "Bugs encontrados y corregidos" abajo |
+| 18/08/2026 | Prueba de idempotencia end-to-end (evento repetido con el mismo id) | ✓ segunda entrega devuelve `reintento:true`, conteo de `messages` no sube |
+| 18/08/2026 | Resistencia a inyección de prompt en mensaje real | ✓ el agente no reveló instrucciones ni confirmó un descuento inventado |
+| 18/08/2026 | Aislamiento de datos entre clientes (Marina no puede ver la reparación de Bruno) | ✓ el adaptador devuelve null por `clienteId`, el agente lo reporta sin filtrar el dato ajeno |
+| 18/08/2026 | Doble interruptor y canales apagados (Instagram/Messenger) | ✓ los mensajes entran a la bandeja, el agente no responde |
+
+### Bugs encontrados y corregidos probando contra servicios reales
+
+Ninguno de estos tres dio un error en ningún log. Se encontraron mirando el contenido
+real de las conversaciones, no la salida del webhook — que es exactamente lo que
+`referencias/trampas.md` pide hacer antes de declarar una fase terminada.
+
+1. **El pool de conexiones colgaba `next dev` 5 minutos por evento.** `max: 1` es
+   correcto en Vercel (una conexión por invocación) pero un cuello de botella real en
+   un servidor de desarrollo persistente. Ahora `max` depende de `NODE_ENV`
+   (`src/lib/db.ts`).
+2. **La cascada de `agent_configs` nunca llegaba al valor global.** Las columnas que
+   cascadean tenían `.notNull().default([])` / `.default(8)`: una fila de canal sin
+   ese campo quedaba en `[]`/`8`, no en `null`, y el `??` de la cascada nunca caía al
+   global. El agente se quedó sin herramientas —contestaba de memoria en vez de
+   consultar el sistema— y el guardrail de precios quedó con la lista blanca vacía,
+   es decir, permisivo. Corregido en el esquema (columnas nullable, sin default) y
+   documentado como trampa 16.
+3. **El guardrail de precios bloqueaba respuestas correctas** por leer el número de
+   pedido (`PED-4471`), el año de una fecha (`11/08/2026`) o una cantidad con unidad
+   (`40L`) como si fueran cifras de dinero sueltas. Corregido con extracción de la
+   cifra completa + validación de contexto en JS, documentado como trampa 17.
+
+Verificación final después de las tres correcciones: 4 conversaciones reales
+completadas de punta a punta, con los datos exactos del fixture ficticio, sin un
+bloqueo de guardrail de más ni de menos.
 
 ### Versiones resueltas y verificadas (18/08/2026)
 

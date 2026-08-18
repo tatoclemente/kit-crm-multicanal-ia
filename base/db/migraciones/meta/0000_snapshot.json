@@ -1,5 +1,5 @@
 {
-  "id": "3259688f-6190-44f3-8c2b-80d06fd4b0c6",
+  "id": "43bb2525-08a1-487e-8f9b-c93d34a340ff",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -38,8 +38,7 @@
           "name": "enabled_tools",
           "type": "jsonb",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'[]'::jsonb"
+          "notNull": false
         },
         "model": {
           "name": "model",
@@ -51,22 +50,19 @@
           "name": "buffer_seconds",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true,
-          "default": 8
+          "notNull": false
         },
         "allowed_prices": {
           "name": "allowed_prices",
           "type": "jsonb",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'[]'::jsonb"
+          "notNull": false
         },
         "allowed_hosts": {
           "name": "allowed_hosts",
           "type": "jsonb",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'[]'::jsonb"
+          "notNull": false
         },
         "fallback_message": {
           "name": "fallback_message",

@@ -3,11 +3,11 @@ CREATE TABLE "agent_configs" (
 	"channel" text NOT NULL,
 	"enabled" boolean DEFAULT false NOT NULL,
 	"system_prompt" text,
-	"enabled_tools" jsonb DEFAULT '[]'::jsonb NOT NULL,
+	"enabled_tools" jsonb,
 	"model" text,
-	"buffer_seconds" integer DEFAULT 8 NOT NULL,
-	"allowed_prices" jsonb DEFAULT '[]'::jsonb NOT NULL,
-	"allowed_hosts" jsonb DEFAULT '[]'::jsonb NOT NULL,
+	"buffer_seconds" integer,
+	"allowed_prices" jsonb,
+	"allowed_hosts" jsonb,
 	"fallback_message" text,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );

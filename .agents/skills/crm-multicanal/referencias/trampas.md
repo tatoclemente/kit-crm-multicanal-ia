@@ -115,3 +115,56 @@ Lo mismo con `:free`: se satura y devuelve 429 en producción.
 **Antes de dejar un modelo configurado**, probalo con una llamada real que además use
 una herramienta. Un modelo que contesta pero no llama herramientas deja al agente
 inventando estados de pedido en vez de consultarlos.
+
+## 16 · El default de la columna gana sobre el default del código
+
+`agent_configs` cascadea: config del canal → config global → default del código
+(`?? []`, `?? 8`). Eso solo funciona si una fila de canal sin ese campo queda en
+`null`. Si la columna tiene `.notNull().default([])`, una fila que no lo especifica
+NO queda en `null`: queda en `[]`, un valor real. El `??` de JavaScript salta al
+siguiente valor solo ante `null`/`undefined`, nunca ante un array vacío — así que el
+default de la columna tapa el valor global sin ningún error.
+
+Así se rompió la primera vez: la fila `whatsapp` tenía `enabled_tools: []` de fábrica,
+el agente se quedó sin ninguna herramienta —contestaba de memoria en vez de consultar
+el sistema— y la lista blanca de precios y dominios quedó vacía, con el guardrail
+correspondiente efectivamente apagado. Nada de esto tiró un error: el webhook seguía
+devolviendo 200 y el agente seguía "respondiendo".
+
+**La regla**: en cualquier columna que participe de una cascada con `??`, el default va
+en el código, nunca en la columna. La columna queda nullable y sin default. Antes de
+declarar una fase de configuración por canal como terminada, sembrá una fila de canal
+vacía a propósito y confirmá que lee el valor global — no alcanza con que compile.
+
+## 17 · El guardrail de precios lee cualquier número como plata
+
+La regex que detecta cifras de dinero, sin cuidado, matchea CUALQUIER corrida de
+dígitos. Tres formas distintas de que esto salga mal, las tres encontradas probando
+el kit contra la API real, ninguna con un solo error visible:
+
+1. **Números de pedido o de ticket.** `PED-4471` deja "447" pegado a un guion; el
+   agente contesta perfecto ("tu pedido PED-4471 está en camino") y el guardrail lo
+   bloquea porque "447" no está en la lista de precios permitidos.
+2. **El año de una fecha.** `11/08/2026` deja "2026" suelto: cuatro dígitos, pasa el
+   filtro de longitud mínima, no está en la lista de precios, se bloquea una fecha.
+3. **Una cantidad con su unidad.** `1200ml` o `40L` sin espacio antes de la letra se
+   lee igual que una cifra de dinero.
+
+El cliente recibe el mensaje neutro de fallback en lugar de la respuesta correcta que
+el sistema ya tenía armada. El log dice que el guardrail "funcionó" — bloqueó algo.
+Solo mirando el `blocked_text` en `guardrail_events` se ve que lo bloqueado era
+correcto.
+
+**Lo que NO alcanza**: un lookahead al final de la regex (`(?!\p{L})`) para excluir
+los pegados a una unidad. El motor de regex RETROCEDE a un match más corto para
+esquivar la condición: con `40L`, si "40" no pasa el lookahead, prueba con "4" solo
+—y el "0" que queda después no es una letra, así que ese match sí pasa. Se arregla
+extrayendo la cifra completa primero (sin lookaround) y revisando en código el
+carácter de antes y de después, nunca dejando que la propia regex decida cuánto
+achicar el match.
+
+**La regla**: antes de dar por buena una lista blanca de precios, probá un mensaje
+que junte un precio real con un número de pedido, una fecha completa y una cantidad
+con unidad en la misma respuesta — y confirmá que solo el precio se evalúa contra la
+lista. `.agents/skills/crm-multicanal/referencias/fase-5-agente.md` tiene el detalle
+de qué probar en esta fase.
