@@ -99,3 +99,19 @@ interfaz y va **fuera** del bloque de instrucciones en el prompt del agente.
 
 Una variable `NEXT_PUBLIC_` con la clave de servicio de Supabase publica acceso total a
 la base de tu cliente. Cualquiera que abra el inspector la ve.
+
+## 15 · El modelo con sufijo `:batch`
+
+Es entre un 50% y un 80% más barato que la versión normal, así que salta a la vista
+cuando se comparan precios. Pero solo existe en la API de lotes, que es **asincrónica**:
+se manda un trabajo y el resultado se recoge más tarde. Es barato por eso.
+
+Con ese sufijo el agente no responde nunca. OpenRouter devuelve
+`404 This model is only available through the Batch API`, y como el error aparece
+recién en la primera conversación real, parece un problema del webhook o de la base.
+
+Lo mismo con `:free`: se satura y devuelve 429 en producción.
+
+**Antes de dejar un modelo configurado**, probalo con una llamada real que además use
+una herramienta. Un modelo que contesta pero no llama herramientas deja al agente
+inventando estados de pedido en vez de consultarlos.
