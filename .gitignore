@@ -1,0 +1,11 @@
+node_modules/
+.next/
+.env
+.env.local
+.env*.local
+workspace/*
+!workspace/.gitkeep
+entrega/
+*.log
+.DS_Store
+.vercel
