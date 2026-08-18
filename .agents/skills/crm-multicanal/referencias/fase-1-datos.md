@@ -9,7 +9,9 @@ es copiarlo, entenderlo, correr la migración y adaptar solo lo que la entrevist
 2. `npm install`.
 3. Completá `DATABASE_URL` en `.env.local` con la cadena del **pooler** de Supabase
    (puerto 6543, "Transaction pooler"). La conexión directa agota la base en serverless.
-4. `npm run db:generate` y revisá el SQL que salió **antes** de aplicarlo.
+4. La migración inicial ya viene generada y revisada en `db/migraciones/`. Leela antes
+   de aplicarla: son 240 líneas y explican el esquema mejor que cualquier resumen.
+   Si adaptaste algo del esquema, corré `npm run db:generate` y revisá el SQL nuevo.
 5. `npm run db:migrate`.
 6. Cargá los datos iniciales: las etapas del pipeline que dijo el negocio y las filas de
    `agent_configs` (el canal principal en `enabled=true`, los otros dos en `false`).

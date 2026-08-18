@@ -99,10 +99,13 @@ Un CRM entregado está terminado cuando, y solo cuando:
 | 18/08/2026 | `tsc --noEmit` estricto sobre 36 archivos | ✓ 0 errores |
 | 18/08/2026 | `npm run build` de producción | ✓ limpio; ambas rutas de API dinámicas |
 | 18/08/2026 | `scripts/validar_kit.py` del creador | ✓ kit válido |
+| 18/08/2026 | `npm run verificar:openapi` contra el spec en vivo | ✓ 18/18 nombres siguen existiendo; spec sigue en 1.0.4 |
+| 18/08/2026 | `npm run db:generate` con base de prueba | ✓ 19 tablas; el índice parcial de idempotencia se emite correcto |
+| 18/08/2026 | `npm audit` | ⚠ `drizzle-orm` < 0.45.2 tenía inyección SQL (GHSA-gpj5-g38j-94v9) → **actualizado a 0.45.2** |
 
 ### Versiones resueltas y verificadas (18/08/2026)
 
-`next 16.3.1` · `react 19.2.8` · `drizzle-orm 0.38.4` · `postgres 3.4.9` ·
+`next 16.3.1` · `react 19.2.8` · `drizzle-orm 0.45.2` · `drizzle-kit 0.31.10` · `postgres 3.4.9` ·
 `@supabase/supabase-js 2.112.3` · `openai 6.49.0` · `@modelcontextprotocol/sdk 1.30.0` ·
 `zod 3.25.76`. Quedan fijadas en `base/package-lock.json`.
 
@@ -117,3 +120,12 @@ Un CRM entregado está terminado cuando, y solo cuando:
   compila y el simulador está escrito; la corrida queda para la instalación.
 
 Nada de esto se declara como hecho en la documentación del kit.
+
+## Seguridad de dependencias
+
+`npm audit` deja 4 avisos moderados en `esbuild` y `@esbuild-kit/*`, que entran por
+`drizzle-kit`. Son **solo de desarrollo**: `npm ls esbuild --omit=dev` devuelve vacío, así
+que nada de eso llega al servidor desplegado. El aviso de esbuild afecta a su servidor de
+desarrollo, que este kit no usa.
+
+Revisá el audit en cada instalación: la foto de hoy no vale dentro de seis meses.
